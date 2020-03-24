@@ -1,0 +1,1220 @@
+#
+# Copyright (C) 2017-2018 Dremio Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+metadata:
+  # Manually Configured Metadata Section.
+  name: TERADATA
+  apiname: teradata
+  spec_version: '1'
+
+syntax:
+  # Manually Configured Syntax Section.
+  identifier_quote: '"'
+  identifier_length_limit: 128
+  allows_boolean_literal: false
+  map_boolean_literal_to_bit: false
+  supports_catalogs: false
+  supports_schemas: true
+
+data_types:
+  mappings:
+  # Manually Configured Data Types Mappings Section.
+  - source:
+      name: "BIGINT"
+    dremio:
+      name: "bigint"
+    required_cast_arguments: "none"
+  - source:
+      name: "BLOB"
+    dremio:
+      name: "varbinary"
+    required_cast_arguments: "none"
+  - source:
+      name: "BYTE"
+    dremio:
+      name: "varbinary"
+  - source:
+      name: "BYTEINT"
+    dremio:
+      name: "integer"
+    required_cast_arguments: "none"
+  - source:
+      name: "CHAR"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "DATE"
+    dremio:
+      name: "date"
+  - source:
+      name: "FLOAT"
+    dremio:
+      name: "double"
+   - source:
+      name: "GRAPHIC"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "INTEGER"
+    dremio:
+      name: "integer"
+    required_cast_arguments: "none"
+  - source:
+      name: "LONG VARCHAR"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "LONG VARGRAPHIC"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "LONGVARCHAR"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "NUMBER"
+    dremio:
+      name: "decimal"
+  - source:
+      name: "DECIMAL"
+    dremio:
+      name: "decimal"
+  - source:
+      name: "SMALLINT"
+    dremio:
+      name: "integer"
+  - source:
+      name: "TIME WITH TIMEZONE"
+    dremio:
+      name: "time"
+  - source:
+      name: "TIME"
+    dremio:
+      name: "time"
+  - source:
+      name: "TIMESTAMP WITH TIMEZONE"
+    dremio:
+      name: "timestamp"
+  - source:
+      name: "TIMESTAMP"
+    dremio:
+      name: "timestamp"
+  - source:
+      name: "VARBYTE"
+    dremio:
+      name: "varbinary"
+  - source:
+      name: "VARCHAR"
+    dremio:
+      name: "varchar"
+  - source:
+      name: "VARGRAPHIC"
+    dremio:
+      name: "varchar"
+
+relational_algebra:
+  aggregation:
+    enable: true
+    group_by_ordinal: false
+    distinct: true
+    count_functions:
+      count_star:
+        enable: true
+      count:
+        enable: true
+      count_distinct:
+        enable: true
+    functions:
+    - names:
+      - "avg"
+      signatures:
+      - args:
+        - "double"
+        return: "double"
+      - args:
+        - "integer"
+        return: "double"
+    - names:
+      - "max"
+      - "min"
+      signatures:
+      - args:
+        - "integer"
+        return: "integer"
+      - args:
+        - "double"
+        return: "double"
+      - args:
+        - "varchar"
+        return: "varchar"
+    - names:
+      - "sum"
+      signatures:
+      - args:
+        - "double"
+        return: "double"
+      - args:
+        - "integer"
+        return: "bigint"
+
+  except:
+    enable: false
+  project:
+    enable: true
+  join:
+    enable: true
+    cross:
+      enable: true
+    inner:
+      enable: true
+      inequality: true
+    left:
+      enable: true
+      inequality: true
+    right:
+      enable: true
+      inequality: true
+    full:
+      enable: true
+      inequality: true
+  sort:
+    enable: true
+    order_by:
+      enable: true
+      default_nulls_ordering: high
+    fetch_offset:
+      offset_fetch:
+        enable: false
+        format: 'LIMIT {1} OFFSET {0}'
+      offset_only:
+        enable: false
+      fetch_only:
+        enable: true
+        format: 'SAMPLE {0}'
+  union:
+    enable: true
+  union_all:
+    enable: true
+  values:
+    enable: false
+    method: values
+
+# Describe the set of function signatures that are internally supported.
+expressions:
+  subqueries:
+    correlated: true
+    scalar: true
+    in_clause: true
+  supports_case: true
+  supports_over: true
+  operators:
+    - names:
+      - "="
+      - "!="
+      - "<>"
+      - ">"
+      - ">="
+      - "<"
+      - "<="
+      signatures:
+      - args:
+        - "double"
+        - "double"
+        return: "boolean"
+      - args:
+        - "double"
+        - "integer"
+        return: "boolean"
+      - args:
+        - "double"
+        - "varchar"
+        return: "boolean"
+      - args:
+        - "integer"
+        - "double"
+        return: "boolean"
+      - args:
+        - "integer"
+        - "integer"
+        return: "boolean"
+      - args:
+        - "integer"
+        - "varchar"
+        return: "boolean"
+      - args:
+        - "varchar"
+        - "varchar"
+        return: "boolean"
+    - names:
+      - "not"
+      signatures:
+      - args:
+        - "boolean"
+        return: "boolean"
+    # Example scalar function
+    - names:
+      - "sign"
+      signatures:
+      - args:
+        - "double"
+        return: "double"
+      - args:
+        - "integer"
+        return: "integer"
+      - args:
+        - "bigint"
+        return: "bigint"
+        # Example rewrite (although this is not necessary here as the default is the same)
+        rewrite: "SIGN({0})"
+            # Custom Expressions
+    - names:
+        - "cast"
+      signatures:
+        - args:
+            - "varchar"
+          return: "integer"
+        - args:
+            - "varchar"
+          return: "bigint"
+        - args:
+            - "varchar"
+          return: "float"
+        - args:
+           - "varchar"
+          return: "double"
+        - args:
+           - "varchar"
+          return: "timestamp"
+        - args:
+           - "varchar"
+          return: "boolean"
+        - args:
+           - "varchar"
+          return: "date"
+    - names:
+        - "trim" 
+      signatures:
+        - args:
+            - "varchar"
+          return: "varchar"
+    - names: 
+        - "ltrim"
+      signatures:
+        - args:
+            - "varchar"
+          return: "varchar"
+    - names: 
+        - "rtrim"
+      signatures:
+        - args:
+            - "varchar"
+          return: "varchar"
+    - names:
+        - extract_year
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "YEAR({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "YEAR({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "YEAR({0})"
+    - names:
+        - extract_month
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "MONTH({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "MONTH({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "MONTH({0})"
+    - names:
+        - extract_day
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "DAY({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "DAY({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "DAY({0})"
+
+    - names:
+        - extract_hour
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "HOUR({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "HOUR({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "HOUR({0})"
+    - names:
+        - extract_minute
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "MINUTE({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "MINUTE({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "MINUTE({0})"
+    - names:
+        - extract_second
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "SECOND({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "SECOND({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "SECOND({0})"
+ 
+    - names:
+        - extract_dow
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "DAYOFWEEK({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "DAYOFWEEK({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "DAYOFWEEK({0})"
+
+    - names:
+        - extract_doy
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "(((({0})(DATE))-(((({0})(DATE))/10000*10000+0101(DATE)))) + 1)"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "(((({0})(DATE))-(((({0})(DATE))/10000*10000+0101(DATE)))) + 1)"
+        - return: bigint
+          args:
+            - time
+          rewrite: "(((({0})(DATE))-(((({0})(DATE))/10000*10000+0101(DATE)))) + 1)"
+
+    - names:
+        - extract_epoch
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "((CAST({0} AS DATE) - DATE '1970-01-01') * 86400 + (EXTRACT(HOUR FROM {0}) * 3600) + (EXTRACT(MINUTE FROM {0}) * 60) + (EXTRACT(SECOND FROM {0})))"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "((CAST({0} AS DATE) - DATE '1970-01-01') * 86400 + (EXTRACT(HOUR FROM {0}) * 3600) + (EXTRACT(MINUTE FROM {0}) * 60) + (EXTRACT(SECOND FROM {0})))"
+        - return: bigint
+          args:
+            - time
+          rewrite: "((CAST({0} AS DATE) - DATE '1970-01-01') * 86400 + (EXTRACT(HOUR FROM {0}) * 3600) + (EXTRACT(MINUTE FROM {0}) * 60) + (EXTRACT(SECOND FROM {0})))"
+    - names:
+        - extract_quarter
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "CAST(TO_CHAR({0}, 'q') AS BIGINT)"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "CAST(TO_CHAR({0}, 'q') AS BIGINT)"
+        - return: bigint
+          args:
+            - time
+          rewrite: "CAST(TO_CHAR({0}, 'q') AS BIGINT)"
+    - names:
+        - extract_week
+      signatures:
+        - return: bigint
+          args:
+            - date
+          rewrite: "WEEK({0})"
+        - return: bigint
+          args:
+            - timestamp
+          rewrite: "WEEK({0})"
+        - return: bigint
+          args:
+            - time
+          rewrite: "WEEK({0})"          
+    - names:
+        - "-"
+      signatures:
+        - args:
+            - "integer"
+          return: "integer"
+        - args:
+            - "bigint"
+          return: "bigint"
+        - args:
+            - "float"
+          return: "float"
+        - args:
+            - "double"
+          return: "double"
+    - names:
+        - "+"
+      signatures:
+        - args:
+            - "integer"
+          return: "integer"
+        - args:
+            - "bigint"
+          return: "bigint"
+        - args:
+            - "float"
+          return: "float"
+        - args:
+            - "double"
+          return: "double"
+    - names:
+        - "log10"
+      signatures:
+        - args:
+            - "double"
+          return: "double"
+          rewrite: "LOG({0})"
+        - args:
+            - "bigint"
+          return: "double"
+          rewrite: "LOG({0})"
+        - args:
+            - "integer"
+          return: "double"
+          rewrite: "LOG({0})"
+    - names:
+        - "acos"
+      signatures:
+        - args:
+            - "double"
+          return: "double"
+    - names:
+        - "asin"
+      signatures:
+        - args:
+            - "double"
+          return: "double"
+    - names:
+        - "exp"
+      signatures:
+        - args:
+            - "double"
+          return: "double"
+    - names:
+        - "round"
+      signatures:
+        - args:
+            - "integer"
+          return: "integer"
+        - args:
+            - "bigint"
+          return: "bigint"
+        - args:
+            - "double"
+          return: "double"
+          rewrite: "ROUND(CAST({0} as decimal))"
+        - args:
+            - "float"
+          return: "float"
+          rewrite: "ROUND(CAST({0} as decimal))"
+        - args:
+            - "bigint"
+            - "integer"
+          return: "bigint"
+        - args:
+            - "bigint"
+            - "bigint"
+          return: "bigint"
+        - args:
+            - "integer"
+            - "integer"
+          return: "integer"
+        - args:
+            - "integer"
+            - "bigint"
+          return: "integer"
+        - args:
+            - "double"
+            - "integer"
+          return: "double"
+        - args:
+            - "double"
+            - "bigint"
+          return: "double"
+        - args:
+            - "float"
+            - "integer"
+          return: "float"
+        - args:
+            - "float"
+            - "bigint"
+          return: "float"
+
+    - names:
+        - "is null"
+      signatures:
+        - args:
+            - "float"
+          return: "boolean"
+        - args:
+            - "integer"
+          return: "boolean"
+        - args:
+            - "time"
+          return: "boolean"
+        - args:
+            - "varbinary"
+          return: "boolean"
+        - args:
+            - "timestamp"
+          return: "boolean"
+        - args:
+            - "boolean"
+          return: "boolean"
+        - args:
+            - "date"
+          return: "boolean"
+        - args:
+            - "double"
+          return: "boolean"
+        - args:
+            - "varchar"
+          return: "boolean"
+        - args:
+            - "bigint"
+          return: "boolean"
+    - names:
+        - "is not null"
+      signatures:
+        - args:
+            - "float"
+          return: "boolean"
+        - args:
+            - "integer"
+          return: "boolean"
+        - args:
+            - "time"
+          return: "boolean"
+        - args:
+            - "varbinary"
+          return: "boolean"
+        - args:
+            - "timestamp"
+          return: "boolean"
+        - args:
+            - "boolean"
+          return: "boolean"
+        - args:
+            - "date"
+          return: "boolean"
+        - args:
+            - "double"
+          return: "boolean"
+        - args:
+            - "varchar"
+          return: "boolean"
+        - args:
+            - "bigint"
+          return: "boolean"
+    - names:
+        - "like"
+      signatures:
+        - args:
+            - "varchar"
+            - "varchar"
+          return: "boolean"
+        - args:
+            - "varbinary"
+            - "varbinary"
+          return: "boolean"
+    - names:
+        - "not"
+      signatures:
+        - args:
+            - "boolean"
+          return: "boolean"
+    - names:
+        - "||"
+      signatures:
+        - args:
+            - "time"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "date"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "float"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "timestamp"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "integer"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "boolean"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "varbinary"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "time"
+          return: "varchar"
+        - args:
+            - "boolean"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "double"
+          return: "varchar"
+        - args:
+            - "float"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "bigint"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "varbinary"
+            - "varbinary"
+          return: "varbinary"
+        - args:
+            - "varbinary"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "timestamp"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "double"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "date"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "varchar"
+            - "bigint"
+          return: "varchar"
+        - args:
+            - "integer"
+            - "varchar"
+          return: "varchar"
+        - args:
+            - "double"
+            - "double"
+          return: "varchar"
+    - names:
+        - "or"
+      signatures:
+        - args:
+            - "boolean"
+            - "boolean"
+          return: "boolean"
+    - names:
+        - "abs"
+      signatures:
+        - args:
+            - "integer"
+          return: "integer"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "bigint"
+          return: "bigint"
+        - args:
+            - "float"
+          return: "double"
+    - names:
+        - "acos"
+      signatures:
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "asin"
+      signatures:
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "atan"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "atan2"
+      signatures:
+        - args:
+            - "bigint"
+            - "float"
+          return: "double"
+        - args:
+            - "double"
+            - "double"
+          return: "double"
+        - args:
+            - "double"
+            - "bigint"
+          return: "double"
+        - args:
+            - "bigint"
+            - "integer"
+          return: "double"
+        - args:
+            - "integer"
+            - "bigint"
+          return: "double"
+        - args:
+            - "integer"
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+            - "integer"
+          return: "double"
+        - args:
+            - "float"
+            - "float"
+          return: "double"
+        - args:
+            - "double"
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+            - "float"
+          return: "double"
+        - args:
+            - "bigint"
+            - "bigint"
+          return: "double"
+        - args:
+            - "float"
+            - "bigint"
+          return: "double"
+        - args:
+            - "float"
+            - "double"
+          return: "double"
+        - args:
+            - "bigint"
+            - "double"
+          return: "double"
+        - args:
+            - "integer"
+            - "integer"
+          return: "double"
+        - args:
+            - "double"
+            - "integer"
+          return: "double"
+
+    - names:
+        - "ceil"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "cos"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "cot"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "degrees"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "exp"
+      signatures:
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "ln"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "mod"
+      signatures:
+        - args:
+            - "double"
+            - "double"
+          return: "double"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "double"
+            - "bigint"
+          return: "double"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "integer"
+            - "double"
+          return: "double"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "bigint"
+            - "bigint"
+          return: "bigint"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "integer"
+            - "integer"
+          return: "integer"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "bigint"
+            - "double"
+          return: "double"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "bigint"
+            - "integer"
+          return: "integer"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "double"
+            - "integer"
+          return: "double"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+        - args:
+            - "integer"
+            - "bigint"
+          return: "bigint"
+          rewrite: "CASE WHEN {1} = 0 THEN NULL ELSE MOD({0}, {1}) END "
+    - names:
+        - "power"
+      signatures:
+        - args:
+            - "bigint"
+            - "float"
+          return: "double"
+        - args:
+            - "bigint"
+            - "integer"
+          return: "double"
+        - args:
+            - "integer"
+            - "bigint"
+          return: "double"
+        - args:
+            - "integer"
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+            - "integer"
+          return: "double"
+        - args:
+            - "float"
+            - "float"
+          return: "double"
+        - args:
+            - "double"
+            - "double"
+          return: "double"
+        - args:
+            - "integer"
+            - "integer"
+          return: "double"
+        - args:
+            - "double"
+            - "float"
+          return: "double"
+        - args:
+            - "double"
+            - "integer"
+          return: "double"
+        - args:
+            - "integer"
+            - "float"
+          return: "double"
+    - names:
+        - "radians"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "sin"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "sqrt"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+    - names:
+        - "tan"
+      signatures:
+        - args:
+            - "bigint"
+          return: "double"
+        - args:
+            - "double"
+          return: "double"
+        - args:
+            - "float"
+          return: "double"
+        - args:
+            - "integer"
+          return: "double"
+          
+    - names:
+        - "char_length"
+      signatures:
+        - args:
+            - "varchar"
+          return: "integer"
+    - names:
+        - "character_length"
+      signatures:
+        - args:
+            - "varchar"
+          return: "integer"
+    - names:
+        - "lower"
+      signatures:
+        - args:
+            - "varchar"
+          return: "varchar"
+    - names:
+        - "replace"
+      signatures:
+        - args:
+            - "varchar"
+            - "varchar"
+            - "varchar"
+          return: "varchar"
+    - names:
+        - "substring"
+      signatures:
+        - args:
+            - "varchar"
+            - "integer"
+            - "integer"
+          return: "varchar"
+    - names:
+        - "substr"
+      signatures:
+        - args:
+            - "varchar"
+            - "integer"
+            - "integer"
+          return: "varchar"
+          
+    - names:
+        - "substring"
+      signatures:
+        - args:
+            - "varchar"
+            - "integer"
+          return: "varchar"
+    - names:
+        - "substr"
+      signatures:
+        - args:
+            - "varchar"
+            - "integer"
+          return: "varchar"
+    - names:
+        - "upper"
+      signatures:
+        - args:
+            - "varchar"
+          return: "varchar"
+
+
+
+
+
+
+  variable_length_operators:
+    - names:
+        - and
+      variable_signatures:
+        - return: boolean
+          arg_type: boolean
+    - names:
+        - or
+      variable_signatures:
+        - return: boolean
+          arg_type: boolean
+ 
