@@ -21,6 +21,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import com.dremio.exec.catalog.conf.DisplayMetadata;
 import com.dremio.exec.catalog.conf.NotMetadataImpacting;
+import com.dremio.exec.catalog.conf.Secret;
 import com.dremio.exec.catalog.conf.SourceType;
 import com.dremio.exec.server.SabotContext;
 import com.dremio.exec.store.jdbc.CloseableDataSource;
@@ -33,30 +34,45 @@ import com.google.common.annotations.VisibleForTesting;
 import io.protostuff.Tag;
 
 /**
- * Configuration for SQLite sources.
+ * Configuration for Teradata sources.
  */
-@SourceType(value = "SQLITE", label = "SQLite")
-public class SqliteConf extends AbstractArpConf<SqliteConf> {
-  private static final String ARP_FILENAME = "arp/implementation/sqlite-arp.yaml";
+@SourceType(value = "TERADATA", label = "Teradata")
+public class TeradataConf extends AbstractArpConf<TeradataConf> {
+  private static final String ARP_FILENAME = "arp/implementation/teradata-arp.yaml";
   private static final ArpDialect ARP_DIALECT =
       AbstractArpConf.loadArpFile(ARP_FILENAME, (ArpDialect::new));
-  private static final String DRIVER = "org.sqlite.JDBC";
+  private static final String DRIVER = "com.teradata.jdbc.TeraDriver";
 
   @NotBlank
   @Tag(1)
-  @DisplayMetadata(label = "Database")
-  public String database;
+  @DisplayMetadata(label = "Server")
+  public String server;
 
+  @NotBlank
   @Tag(2)
-  @DisplayMetadata(label = "Record fetch size")
-  @NotMetadataImpacting
-  public int fetchSize = 200;
+  @DisplayMetadata(label = "Username")
+  public String username;
+
+  @NotBlank
+  @Tag(3)
+  @Secret
+  @DisplayMetadata(label = "Password")
+  public String password;
+
+  @Tag(4)
+  @DisplayMetadata(label = "Logmech")
+  public String logmech = "TD2";
+
 
   @VisibleForTesting
   public String toJdbcConnectionString() {
-    final String database = checkNotNull(this.database, "Missing database.");
+    final String server   = checkNotNull(this.server, "Missing server");
+    final String username = checkNotNull(this.username, "Missing username");
+    final String password = checkNotNull(this.password, "Missing password");
+    final String logmech  = checkNotNull(this.logmech,  "Missing LogMech");
+    
 
-    return String.format("jdbc:sqlite:%s", database);
+    return String.format("jdbc:teradata://%s/CHARSET=UTF8,LOGMECH=%s", server, logmech);
   }
 
   @Override
@@ -64,16 +80,14 @@ public class SqliteConf extends AbstractArpConf<SqliteConf> {
   public Config toPluginConfig(SabotContext context) {
     return JdbcStoragePlugin.Config.newBuilder()
         .withDialect(getDialect())
-        .withFetchSize(fetchSize)
         .withDatasourceFactory(this::newDataSource)
         .clearHiddenSchemas()
-        .addHiddenSchema("SYSTEM")
         .build();
   }
 
   private CloseableDataSource newDataSource() {
     return DataSources.newGenericConnectionPoolDataSource(DRIVER,
-      toJdbcConnectionString(), null, null, null, DataSources.CommitMode.DRIVER_SPECIFIED_COMMIT_MODE);
+      toJdbcConnectionString(), username, password, null, DataSources.CommitMode.DRIVER_SPECIFIED_COMMIT_MODE);
   }
 
   @Override
